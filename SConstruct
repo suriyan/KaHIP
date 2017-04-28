@@ -74,18 +74,16 @@ env = GetEnvironment()
 env.Append(CPPPATH=['../extern/argtable-2.10/include'])
 env.Append(CPPPATH=['./extern/argtable-2.10/include'])
 env.Append(CPPPATH=['./lib'])
+env.Append(CPPPATH=['./app'])
 env.Append(CPPPATH=['./lib/tools'])
 env.Append(CPPPATH=['./lib/partition'])
 env.Append(CPPPATH=['./lib/io'])
 env.Append(CPPPATH=['./lib/partition/uncoarsening/refinement/quotient_graph_refinement/flow_refinement/'])
-env.Append(LIBPATH=['../extern/argtable-2.10/lib'])
-env.Append(LIBPATH=['./extern/argtable-2.10/lib'])
 env.Append(CPPPATH=['../lib'])
 env.Append(CPPPATH=['../lib/tools'])
 env.Append(CPPPATH=['../lib/partition'])
 env.Append(CPPPATH=['../lib/io'])
 env.Append(CPPPATH=['../lib/partition/uncoarsening/refinement/quotient_graph_refinement/flow_refinement/'])
-env.Append(LIBPATH=['../../extern/argtable-2.10/lib'])
 env.Append(CPPPATH=['/usr/include/openmpi/'])
 
 conf = Configure(env)
@@ -97,6 +95,12 @@ if SYSTEM == 'Darwin':
         # homebrew related paths
         env.Append(LIBPATH=['/usr/local/lib/'])
         env.Append(LIBPATH=['/usr/local/lib/openmpi/'])
+        env.Append(LIBPATH=['../extern/argtable-2.10/maclib'])
+        env.Append(LIBPATH=['./extern/argtable-2.10/maclib'])
+else:
+        env.Append(LIBPATH=['../extern/argtable-2.10/lib'])
+        env.Append(LIBPATH=['./extern/argtable-2.10/lib'])
+        env.Append(LIBPATH=['../../extern/argtable-2.10/lib'])
 
 #by D. Luxen
 #if not conf.CheckLibWithHeader('argtable2', 'argtable2.h', 'CXX'):
@@ -108,20 +112,36 @@ if SYSTEM == 'Darwin':
 #
 #
 env.Append(CXXFLAGS = '-fopenmp')
-# Apply variant specific settings.
-if env['variant'] == 'optimized':
-  env.Append(CXXFLAGS = '-DNDEBUG -Wall -funroll-loops  -fno-stack-limit -O3 -std=c++0x')
-  env.Append(CCFLAGS  = '-O3  -DNDEBUG -funroll-loops -std=c++0x')
-elif env['variant'] == 'optimized_output':
-  # A little bit more output on the console
-  env.Append(CXXFLAGS = ' -DNDEBUG -funroll-loops -Wall -fno-stack-limit -O3 -std=c++0x')
-  env.Append(CCFLAGS  = '-O3  -DNDEBUG -DKAFFPAOUTPUT  -std=c++0x')
+
+if "clang" in env['CC'] or "clang" in env['CXX']:
+        if env['variant'] == 'optimized':
+          env.Append(CXXFLAGS = '-DNDEBUG -Wall -funroll-loops -O3 -std=c++0x')
+          env.Append(CCFLAGS  = '-O3  -DNDEBUG -funroll-loops -std=c++0x')
+        elif env['variant'] == 'optimized_output':
+          # A little bit more output on the console
+          env.Append(CXXFLAGS = ' -DNDEBUG -funroll-loops -Wall -O3 -std=c++0x')
+          env.Append(CCFLAGS  = '-O3  -DNDEBUG -DKAFFPAOUTPUT  -std=c++0x')
+        else:
+          env.Append(CXXFLAGS = ' -DNDEBUG -Wall -funroll-loops -O3 -std=c++0x')
+          env.Append(CCFLAGS  = '-O3  -DNDEBUG -funroll-loops -std=c++0x ')
+          if SYSTEM != 'Darwin':
+                env.Append(CXXFLAGS = '-march=native')
+                env.Append(CCFLAGS  = '-march=native')
+
 else:
-  env.Append(CXXFLAGS = ' -DNDEBUG -Wall -funroll-loops  -fno-stack-limit -O3 -std=c++0x')
-  env.Append(CCFLAGS  = '-O3  -DNDEBUG -funroll-loops -std=c++0x ')
-  if SYSTEM != 'Darwin':
-        env.Append(CXXFLAGS = '-march=native')
-        env.Append(CCFLAGS  = '-march=native')
+        if env['variant'] == 'optimized':
+          env.Append(CXXFLAGS = '-DNDEBUG -Wall -funroll-loops  -fno-stack-limit -O3 -std=c++0x')
+          env.Append(CCFLAGS  = '-O3  -DNDEBUG -funroll-loops -std=c++0x')
+        elif env['variant'] == 'optimized_output':
+          # A little bit more output on the console
+          env.Append(CXXFLAGS = ' -DNDEBUG -funroll-loops -Wall -fno-stack-limit -O3 -std=c++0x')
+          env.Append(CCFLAGS  = '-O3  -DNDEBUG -DKAFFPAOUTPUT  -std=c++0x')
+        else:
+          env.Append(CXXFLAGS = ' -DNDEBUG -Wall -funroll-loops  -fno-stack-limit -O3 -std=c++0x')
+          env.Append(CCFLAGS  = '-O3  -DNDEBUG -funroll-loops -std=c++0x ')
+          if SYSTEM != 'Darwin':
+                env.Append(CXXFLAGS = '-march=native')
+                env.Append(CCFLAGS  = '-march=native')
 
 # Execute the SConscript.
 SConscript('SConscript', exports=['env'],variant_dir=env['variant'], duplicate=False)
