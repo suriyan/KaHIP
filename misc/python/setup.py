@@ -7,7 +7,7 @@ class BinaryDistribution(Distribution):
 
 
 setup(name='kahipwrapper',
-      version='0.1',
+      version='0.1.1',
       description='KaHIP Python Wrapper',
       url='http://github.com/suriyan/KaHIP-wrapper',
       author='Suriyan Lahaprapanon',
